@@ -1,0 +1,2 @@
+# Boggle
+The Boggle Project
