@@ -4,12 +4,12 @@ import java.util.Iterator;
 
 public class Dictionary
 {
-  String fileName;
-  ArrayList<String> dictionary = new ArrayList<String>();
+  //final private String fileName;
+  private ArrayList<String> dictionary = new ArrayList<>();
 
   public Dictionary(String fileName)
   {
-    this.fileName = fileName;
+    //this.fileName = fileName;
 
     // This will reference one line at a time
     String word;
@@ -41,8 +41,6 @@ public class Dictionary
     catch (IOException ex)
     {
       System.out.println("An error was encountered while reading in the dictionary");
-      // Or we could just do this:
-      // ex.printStackTrace();
     }
   }
 

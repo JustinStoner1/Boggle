@@ -7,16 +7,22 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.util.Scanner;
+
 public class Gui extends Application
 {
-  static String dictionaryFilename = "assets/OpenEnglishWordList.txt";
-  static Dictionary dictionary = new Dictionary(dictionaryFilename);
+  private static String dictionaryFilename = "assets/OpenEnglishWordList.txt";
+  private static Dictionary dictionary = new Dictionary(dictionaryFilename);
+  private static int widthHeight = 5;
 
   public static void main(String[] args)
   {
+    Board board = new Board(widthHeight);
+    System.out.println(board);
+    Scanner userTestInput = new Scanner(System.in);
+    System.out.println(board.containsWord(userTestInput.nextLine()));
+    System.out.println(board);
 
-    //System.out.println(""+dictionary);
-    //System.out.println(dictionary.isInDictionary("zymometers"));
     launch(args);
   }
 
