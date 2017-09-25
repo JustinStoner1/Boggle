@@ -7,7 +7,7 @@ public class Board
   private ArrayList<ArrayList<String>> board = new ArrayList<>();
   private int widthHeight;
   private Random randGen = new Random();
-  private String diceFaces = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  private String diceFaces = "abcdefghijklmnopqrstuvwxyz";//"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   private int[] letterCounts = new int[diceFaces.length()];
 
   private int[] searchDirC = {0,1,1,1,0,-1,-1,-1};
@@ -36,14 +36,12 @@ public class Board
       }
       board.add(row);
     }
-    int[] directionsC = {0,1,0,-1};
-    int[] directionsR = {-1,0,1,0};
     for (int r = 0; r < widthHeight; r++)
     {
       if (letterCounts[20] > 4) break;
       for (int c = 0; c < widthHeight; c++)
       {
-        if (board.get(r).get(c).equals("Q"))
+        if (board.get(r).get(c).equals("q"))
         {
           int nC, nR;
           neighborLoop:
@@ -104,7 +102,7 @@ public class Board
         //board.get(nR).set(nC, "*");
         if (board.get(nR).get(nC).equals(lookFor))
         {
-          System.out.println("Found a: "+lookFor);
+          //System.out.println("Found a: "+lookFor);
           //board.get(nR).set(nC, "@");
           letterNumber++;
           if (lookForACertainNeighbor(nR, nC, word, letterNumber))
@@ -115,6 +113,11 @@ public class Board
       }
     }
     return false;
+  }
+
+  public ArrayList<ArrayList<String>> getBoard()
+  {
+    return board;
   }
 
   public String toString()
