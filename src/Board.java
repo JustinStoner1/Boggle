@@ -76,7 +76,7 @@ public class Board
       {
         if (firstLetter.equals(board.get(r).get(c)))
         {
-          board.get(r).set(c, "*");
+          //board.get(r).set(c, "*");
           if (lookForACertainNeighbor(r, c, word, 1))
           {
             return true;
@@ -92,7 +92,7 @@ public class Board
     if (letterNumber >= word.length()) return true;
 
     String lookFor = ""+word.charAt(letterNumber);
-    System.out.println("looking for a: "+lookFor);
+    //System.out.println("looking for a: "+lookFor);
 
     int nC, nR;
     for (int d = 0; d < 8; d++)
@@ -105,7 +105,7 @@ public class Board
         if (board.get(nR).get(nC).equals(lookFor))
         {
           System.out.println("Found a: "+lookFor);
-          board.get(nR).set(nC, "@");
+          //board.get(nR).set(nC, "@");
           letterNumber++;
           if (lookForACertainNeighbor(nR, nC, word, letterNumber))
           {
@@ -123,7 +123,7 @@ public class Board
     Iterator<ArrayList<String>> boardIterator = board.iterator();
     while (boardIterator.hasNext())
     {
-      System.out.println(boardIterator.next());
+      stringRepOfDictionary += boardIterator.next() + "\n";
     }
     return stringRepOfDictionary;
   }

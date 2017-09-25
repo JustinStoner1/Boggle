@@ -11,53 +11,59 @@ import java.util.Scanner;
 
 public class Gui extends Application
 {
-  private static String dictionaryFilename = "assets/OpenEnglishWordList.txt";
-  private static Dictionary dictionary = new Dictionary(dictionaryFilename);
-  private static int widthHeight = 5;
+  private Game boggle;
 
   public static void main(String[] args)
   {
-    Board board = new Board(widthHeight);
-    System.out.println(board);
-    Scanner userTestInput = new Scanner(System.in);
-    System.out.println(board.containsWord(userTestInput.nextLine()));
-    System.out.println(board);
-
     launch(args);
+  }
+
+  public void startAGame()
+  {
+    boggle = new Game(5);
+    //boggle.tests();
   }
 
   @Override
   public void start(Stage primaryStage)
   {
+    startAGame();
     primaryStage.setTitle("Boggle");
     StackPane window = new StackPane();
 
     Text messageBox = new Text("Enter a word to see if it is in our dictionary");
     BorderPane screen = new BorderPane();
     TextField userInputBar = new TextField();
+    Text playedWords = new Text("Played Words: \n");
     screen.setBottom(userInputBar);
-    screen.setCenter(messageBox);
+    screen.setTop(messageBox);
+    screen.setRight(playedWords);
+
+    //TEMP
+    Text boardDisplay = new Text(boggle+"");
+    screen.setCenter(boardDisplay);
+
     window.getChildren().add(screen);
 
     userInputBar.setOnKeyPressed(event -> {
       if(event.getCode() == KeyCode.ENTER)
       {
         String userInput = userInputBar.getText();
-        boolean isInDictionary = dictionary.isInDictionary(userInput);
-        if (isInDictionary)
+        boolean successFullTurn = boggle.takeTurn(userInput);
+        userInputBar.setText("");
+        if (successFullTurn)
         {
-          messageBox.setText(userInput + " is in our dictionary");
+          messageBox.setText(userInput + " is a valid move");
+          playedWords.setText(playedWords.getText() + userInput + "\n");
         }
         else
         {
-          messageBox.setText(userInput + " is not in our dictionary");
+          messageBox.setText(userInput + " is not a valid move");
         }
-        //System.out.println("Da");
-        userInputBar.setText("");
       }
     });
 
-    primaryStage.setScene(new Scene(window, 300, 100));
+    primaryStage.setScene(new Scene(window, 300, 200));
     primaryStage.show();
   }
 
