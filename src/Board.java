@@ -12,6 +12,7 @@ public class Board
 
   private int[] searchDirC = {0,1,1,1,0,-1,-1,-1};
   private int[] searchDirR = {-1,-1,0,1,1,1,0,-1};
+  private int[] dirIndexs = {0,1,2,3,4,5,6,7};
 
   public Board(int widthHeight)
   {
@@ -51,7 +52,7 @@ public class Board
             nR = r + searchDirR[d];
             if (nC >= 0 && nR >= 0 && nR < widthHeight && nC < widthHeight)
             {
-              int chanceToBeAU = randGen.nextInt(4);
+              int chanceToBeAU = randGen.nextInt(8);
               if (chanceToBeAU == 0)
               {
                 board.get(nR).set(nC, "u");

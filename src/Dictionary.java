@@ -16,10 +16,7 @@ public class Dictionary
 
     try
     {
-      // FileReader reads text files in the default encoding.
       FileReader fileReader = new FileReader(fileName);
-
-      // Always wrap FileReader in BufferedReader.
       BufferedReader bufferedReader = new BufferedReader(fileReader);
 
       while (true)
@@ -34,13 +31,15 @@ public class Dictionary
       // Always close files.
       bufferedReader.close();
     }
-    catch (FileNotFoundException ex)
+    catch (FileNotFoundException error)
     {
       System.out.println("Dictionary txt file not found");
+      System.exit(1);
     }
-    catch (IOException ex)
+    catch (IOException error)
     {
       System.out.println("An error was encountered while reading in the dictionary");
+      System.exit(1);
     }
   }
 
