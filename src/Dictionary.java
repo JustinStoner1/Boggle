@@ -5,7 +5,7 @@ import java.util.Iterator;
 public class Dictionary
 {
   //final private String fileName;
-  private ArrayList<String> dictionary = new ArrayList<>();
+  private ArrayList<String> dictionary = new ArrayList<>(178695);
 
   public Dictionary(String fileName)
   {
@@ -31,7 +31,7 @@ public class Dictionary
         }
         else break;
       }
-      // Always close files.
+      //System.out.println(dictionary.size());
       bufferedReader.close();
     }
     catch (FileNotFoundException ex)
@@ -47,6 +47,10 @@ public class Dictionary
   public boolean isInDictionary(String word)
   {
     return dictionary.contains(word);
+  }
+  public ArrayList<String> getDictionary()
+  {
+    return new ArrayList<String>(dictionary);
   }
 
   public String toString()

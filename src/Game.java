@@ -19,6 +19,20 @@ public class Game
     board = new Board(widthHeight);
     goodWords = new WordList();
     badWords = new WordList();
+
+    /*
+    int numWords = 0;
+    ArrayList<String> words = dictionary.getDictionary();
+    for (String word : words)
+    {
+      if (board.containsWord(word))
+      {
+        System.out.println(word);
+        numWords++;
+      }
+    }
+    System.out.println(numWords);
+    */
   }
 
   public boolean takeTurn(String userInput)
@@ -34,7 +48,7 @@ public class Game
       {
         if (isInBoard)
         {
-          board.showVisted();
+          //board.showVisted();
           if (isInDictionary)
           {
             goodWords.addWord(userInput);

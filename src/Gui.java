@@ -25,11 +25,13 @@ public class Gui extends Application
   private Timeline timeline;
 
   //Gui
-  StackPane window;
-  BorderPane screen;
-  Text currTimeDisplay;
-  Text scoreBoard;
-  TextField userInputBar;
+  private StackPane window;
+  private BorderPane screen;
+  private Text currTimeDisplay;
+  private Text scoreBoard;
+  private TextField userInputBar;
+  private String backGroundStyle = "-fx-background: rgb(200,200,200);";
+  //Dark: "-fx-background: rgb(80,80,80);";
 
   //Window size
   private final int tileSize = 80;
@@ -62,8 +64,7 @@ public class Gui extends Application
     screen = new BorderPane();
     currTimeDisplay = new Text();
 
-    //window.setBackground(new Background(new BackgroundFill(Color.CORAL,CornerRadii.EMPTY, Insets.EMPTY)));
-    window.setStyle("-fx-background: rgb(80,80,80);");
+    window.setStyle(backGroundStyle);
 
     primaryStage.setTitle("Boggle");
 
@@ -96,7 +97,7 @@ public class Gui extends Application
     goodPlaysColumn.getChildren().add(goodPlays);
     ScrollPane rightBar = new ScrollPane();
     rightBar.setContent(goodPlaysColumn);
-    rightBar.setStyle("-fx-background: rgb(80,80,80);");
+    rightBar.setStyle(backGroundStyle);
 
     //Bad words column
     VBox badPlaysColumn = new VBox();
@@ -106,7 +107,7 @@ public class Gui extends Application
     badPlaysColumn.getChildren().add(badPlays);
     ScrollPane leftBar = new ScrollPane();
     leftBar.setContent(badPlaysColumn);
-    leftBar.setStyle("-fx-background: rgb(80,80,80);");
+    leftBar.setStyle(backGroundStyle);
 
     //Text Field
     userInputBar = new TextField();
@@ -201,17 +202,22 @@ public class Gui extends Application
   private void endGame()
   {
     BorderPane gameOver = new BorderPane();
+
     Text gameOverCenter = new Text("Your Final Score:" + boggle.getScore());
     gameOverCenter.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize*2));
+    gameOverCenter.setFill(Color.ORANGERED);
 
     Text gameOverLeft = new Text("GAME\nOVER");
     gameOverLeft.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize*1.5));
+    gameOverLeft.setFill(Color.ORANGERED);
 
     Text gameOverRight = new Text("GAME\nOVER");
     gameOverRight.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize*1.5));
+    gameOverRight.setFill(Color.ORANGERED);
 
     Text gameOverBottom = new Text("You Played: " + boggle.getWordCount() + " Words");
     gameOverBottom.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize*1.5));
+    gameOverBottom.setFill(Color.ORANGERED);
 
     gameOver.setCenter(gameOverCenter);
     gameOver.setLeft(gameOverLeft);

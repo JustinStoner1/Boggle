@@ -20,12 +20,12 @@ public class Board
     char currDiceFace;
     int currLetterIndex;
 
-    board = new ArrayList<>();
-    vistedSpots = new ArrayList<>();
+    board = new ArrayList<>(widthHeight);
+    vistedSpots = new ArrayList<>(widthHeight);
 
     for (int r = 0; r < widthHeight; r++)
     {
-      ArrayList<String> row = new ArrayList<>();
+      ArrayList<String> row = new ArrayList<>(widthHeight);
       vistedSpots.add(new ArrayList<>());
       for (int c = 0; c < widthHeight; c++)
       {
@@ -121,7 +121,7 @@ public class Board
 
   public ArrayList<ArrayList<String>> getBoard()
   {
-    return board;
+    return new ArrayList<ArrayList<String>>(board);
   }
 
   public String toString()
