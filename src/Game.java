@@ -9,6 +9,7 @@ public class Game
   private WordList badWords;
   private int score;
   private int wordCount;
+  private int lastErrorCode;
 
   public Game(String dictionaryFilename, int widthHeight)
   {
@@ -25,24 +26,30 @@ public class Game
     if (userInput.length() > 2)
     {
       wordCount++;
-      boolean isInDictionary = dictionary.isInDictionary(userInput.toLowerCase());
+      userInput = userInput.toLowerCase();
+      boolean isInDictionary = dictionary.isInDictionary(userInput);
       boolean isInBoard = board.containsWord(userInput);
 
       if (!goodWords.isInList(userInput))
       {
         if (isInBoard)
         {
+          board.showVisted();
           if (isInDictionary)
           {
             goodWords.addWord(userInput);
             score += userInput.length() - 2;
             return true;
           }
+          else lastErrorCode = 4;//Not a word
         }
+        else lastErrorCode = 3;//Not in Board
       }
+      else lastErrorCode = 2;//Already Played
     }
+    else lastErrorCode = 1;
     badWords.addWord(userInput);
-    return false;
+    return false;//Too Small
   }
 
   public ArrayList<ArrayList<String>> getBoard()
@@ -65,6 +72,10 @@ public class Game
   public int getWordCount()
   {
     return wordCount;
+  }
+  public int getLastErrorCode()
+  {
+    return lastErrorCode;
   }
 
   public String toString()

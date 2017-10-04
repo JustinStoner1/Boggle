@@ -4,14 +4,15 @@ import java.util.Random;
 
 public class Board
 {
-  private ArrayList<ArrayList<String>> board = new ArrayList<>();
+  private ArrayList<ArrayList<String>> board;
   private int widthHeight;
   private Random randGen = new Random();
   private String diceFaces = "abcdefghijklmnopqrstuvwxyz";//"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   private int[] letterCounts = new int[diceFaces.length()];
+  private ArrayList<ArrayList<String>> vistedSpots;
 
-  private int[] searchDirC = {0,1,1,1,0,-1,-1,-1};
-  private int[] searchDirR = {-1,-1,0,1,1,1,0,-1};
+  private int[] searchDirC = {0, 1, 1, 1, 0, -1, -1, -1};
+  private int[] searchDirR = {-1, -1, 0, 1, 1, 1, 0, -1};
 
   public Board(int widthHeight)
   {
@@ -19,16 +20,21 @@ public class Board
     char currDiceFace;
     int currLetterIndex;
 
+    board = new ArrayList<>();
+    vistedSpots = new ArrayList<>();
+
     for (int r = 0; r < widthHeight; r++)
     {
       ArrayList<String> row = new ArrayList<>();
+      vistedSpots.add(new ArrayList<>());
       for (int c = 0; c < widthHeight; c++)
       {
+        vistedSpots.get(r).add("-");
         while (true)
         {
           currLetterIndex = randGen.nextInt(diceFaces.length());
           currDiceFace = diceFaces.charAt(currLetterIndex);
-          if (letterCounts[currLetterIndex] > 4) continue;
+          if (letterCounts[currLetterIndex] > 3) continue;
           letterCounts[currLetterIndex]++;
           row.add("" + currDiceFace);
           break;
@@ -38,14 +44,14 @@ public class Board
     }
     for (int r = 0; r < widthHeight; r++)
     {
-      if (letterCounts[20] > 4) break;
+      if (letterCounts[20] > 3) break;
       for (int c = 0; c < widthHeight; c++)
       {
         if (board.get(r).get(c).equals("q"))
         {
           int nC, nR;
           neighborLoop:
-          for (int d = 0; d < 8;d++)
+          for (int d = 0; d < 8; d++)
           {
             nC = c + searchDirC[d];
             nR = r + searchDirR[d];
@@ -67,14 +73,15 @@ public class Board
 
   public boolean containsWord(String word)
   {
-    String firstLetter = ""+word.charAt(0);
+    resetVisited();
+    String firstLetter = "" + word.charAt(0);
     for (int r = 0; r < widthHeight; r++)
     {
       for (int c = 0; c < widthHeight; c++)
       {
         if (firstLetter.equals(board.get(r).get(c)))
         {
-          //board.get(r).set(c, "*");
+          vistedSpots.get(r).set(c, "@");
           if (lookForACertainNeighbor(r, c, word, 1))
           {
             return true;
@@ -89,8 +96,7 @@ public class Board
   {
     if (letterNumber >= word.length()) return true;
 
-    String lookFor = ""+word.charAt(letterNumber);
-    //System.out.println("looking for a: "+lookFor);
+    String lookFor = "" + word.charAt(letterNumber);
 
     int nC, nR;
     for (int d = 0; d < 8; d++)
@@ -99,11 +105,9 @@ public class Board
       nR = row + searchDirR[d];
       if (nC >= 0 && nR >= 0 && nR < widthHeight && nC < widthHeight)
       {
-        //board.get(nR).set(nC, "*");
-        if (board.get(nR).get(nC).equals(lookFor))
+        if (board.get(nR).get(nC).equals(lookFor) && !vistedSpots.get(nR).get(nC).equals("@"))
         {
-          //System.out.println("Found a: "+lookFor);
-          //board.get(nR).set(nC, "@");
+          vistedSpots.get(nR).set(nC, "@");
           letterNumber++;
           if (lookForACertainNeighbor(nR, nC, word, letterNumber))
           {
@@ -129,5 +133,29 @@ public class Board
       stringRepOfDictionary += boardIterator.next() + "\n";
     }
     return stringRepOfDictionary;
+  }
+
+  public void resetVisited()
+  {
+    for (int r = 0; r < widthHeight; r++)
+    {
+      vistedSpots.set(r,new ArrayList<>());
+      for (int c = 0; c < widthHeight; c++)
+      {
+        vistedSpots.get(r).add("-");
+      }
+    }
+  }
+
+  public void showVisted()
+  {
+    for (int i = 0;i < widthHeight; i++)
+    {
+      for (int j = 0;j < widthHeight; j++)
+      {
+        System.out.print(vistedSpots.get(i).get(j));
+      }
+      System.out.println("\n");
+    }
   }
 }

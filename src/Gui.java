@@ -1,44 +1,44 @@
-import javafx.animation.KeyFrame;
+import javafx.animation.AnimationTimer;
 import javafx.animation.Timeline;
 import javafx.application.Application;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 
-import javax.swing.*;
 import java.util.ArrayList;
 
 public class Gui extends Application
 {
   //Basic game settings
   private Game boggle;
-  private int widthHeight = 5;
-  private int gameTime = 180000;//In milliseconds
+  private int widthHeight = 5;//max is 10
+  private int gameTimeLimit = 180;//In milliseconds 180000
+  private Timeline timeline;
 
   //Gui
-  StackPane window = new StackPane();
-  BorderPane screen = new BorderPane();
+  StackPane window;
+  BorderPane screen;
+  Text currTimeDisplay;
+  Text scoreBoard;
+  TextField userInputBar;
+
+  //Window size
   private final int tileSize = 80;
   private final String fontName = "monospaced";
   private final int fontSize = 20;
-  private final int horiMarginTotalSize = fontSize*18;
+  private final int horiMarginTotalSize = 0;//fontSize*18;
 
   private final int windowSizeW = tileSize*widthHeight+horiMarginTotalSize;
-  private final int windowSizeH = tileSize*widthHeight+75;
+  private final int windowSizeH = tileSize*widthHeight+100;
 
   private ArrayList<String> letters = new ArrayList<>();
   GridPane boardDisplay;
@@ -57,41 +57,68 @@ public class Gui extends Application
   public void start(Stage primaryStage)
   {
     startAGame();
+
+    window = new StackPane();
+    screen = new BorderPane();
+    currTimeDisplay = new Text();
+
+    //window.setBackground(new Background(new BackgroundFill(Color.CORAL,CornerRadii.EMPTY, Insets.EMPTY)));
+    window.setStyle("-fx-background: rgb(80,80,80);");
+
     primaryStage.setTitle("Boggle");
 
     BorderPane topBoard = new BorderPane();
-    Text messageBox = new Text("Hit \"Enter\" to enter a word");
+
+    //Message Box
+    Text messageBox = new Text(" Hit \"Enter\" to enter a word");
     messageBox.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize));
+    messageBox.setFill(Color.ORANGERED);
 
-    Text scoreBoard = new Text("Score: ");
-    scoreBoard.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize));
+    //Score Board
+    scoreBoard = new Text("Score: ");
+    scoreBoard.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize*1.5));
+    scoreBoard.setFill(Color.ORANGERED);
 
-    topBoard.setRight(new Text("<>---<0>"));
-    topBoard.setLeft(new Text("<0>---<>"));
+    //Time Display
+    currTimeDisplay.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize*0.8));
+    currTimeDisplay.setFill(Color.ORANGERED);
+
+    //Info Display
+    topBoard.setTop(currTimeDisplay);
     topBoard.setCenter(scoreBoard);
     topBoard.setBottom(messageBox);
 
-    TextField userInputBar = new TextField();
-
-    BorderPane goodPlaysColumn = new BorderPane();
-    Text goodPlays = new Text("Accepted Plays:\n");
-    goodPlays.setFill(Color.GREEN);
+    //Good words column
+    VBox goodPlaysColumn = new VBox();
+    Text goodPlays = new Text(" Accepted Plays: \n");
+    goodPlays.setFill(Color.SEAGREEN);
     goodPlays.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize));
-    goodPlaysColumn.setRight(goodPlays);
+    goodPlaysColumn.getChildren().add(goodPlays);
+    ScrollPane rightBar = new ScrollPane();
+    rightBar.setContent(goodPlaysColumn);
+    rightBar.setStyle("-fx-background: rgb(80,80,80);");
 
-    BorderPane badPlaysColumn = new BorderPane();
-    Text badPlays = new Text("Invalid Plays:\n");
-    badPlays.setFill(Color.RED);
+    //Bad words column
+    VBox badPlaysColumn = new VBox();
+    Text badPlays = new Text(" Invalid Plays: \n");
+    badPlays.setFill(Color.ORANGERED);
     badPlays.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize));
-    badPlaysColumn.setRight(badPlays);
+    badPlaysColumn.getChildren().add(badPlays);
+    ScrollPane leftBar = new ScrollPane();
+    leftBar.setContent(badPlaysColumn);
+    leftBar.setStyle("-fx-background: rgb(80,80,80);");
 
+    //Text Field
+    userInputBar = new TextField();
+
+    //board
     boardDisplay = new GridPane();
-
     loadImages();
     updateBoard();
 
-    screen.setRight(goodPlaysColumn);
-    screen.setLeft(badPlaysColumn);
+    //Loading components
+    screen.setRight(rightBar);
+    screen.setLeft(leftBar);
     screen.setCenter(boardDisplay);
     screen.setBottom(userInputBar);
     screen.setTop(topBoard);
@@ -104,31 +131,39 @@ public class Gui extends Application
       if(event.getCode() == KeyCode.ENTER)
       {
         String userInput = userInputBar.getText();
-        boolean successFullTurn = boggle.takeTurn(userInput);
-        userInputBar.setText("");
-        if (successFullTurn)
+        if (userInput.length() > 0)
         {
-          messageBox.setText("\"" + userInput + "\"" + " is a valid play");
-          goodPlays.setText("Accepted Plays:\n" + boggle.getGoodWords());
-          scoreBoard.setText("Score: " + boggle.getScore());
+          boolean successFullTurn = boggle.takeTurn(userInput);
+          userInputBar.setText("");
+          if (successFullTurn)
+          {
+            messageBox.setText(" \"" + userInput + "\"" + " is a valid play, worth " + (userInput.length()-2) + " Point(s)");
+            goodPlays.setText(" Accepted Plays: \n" + boggle.getGoodWords());
+            scoreBoard.setText("Score: " + boggle.getScore());
+          }
+          else
+          {
+            int errorCode = boggle.getLastErrorCode();
+            messageBox.setText(" \"" + userInput + "\" " + errorCodeToString(errorCode));
+            if (errorCode != 2)
+            {
+              badPlays.setText(" Invalid Plays: \n" + boggle.getBadWords());
+            }
+            //badPlaysColumn.getChildren().add(new Text(userInput);
+          }
         }
         else
         {
-          messageBox.setText(userInput + " is not a valid play");
-          badPlays.setText("Invalid Plays:\n" + boggle.getBadWords());
+          messageBox.setText(" You must type a word");
         }
       }
     });
 
-    primaryStage.setScene(new Scene(window, windowSizeW, windowSizeH));
+    primaryStage.setScene(new Scene(window, windowSizeW+badPlays.getBoundsInLocal().getWidth()+goodPlays.getBoundsInLocal().getWidth(), windowSizeH));
     primaryStage.show();
 
-    Timeline timeline = new Timeline(new KeyFrame(
-      Duration.millis(gameTime),
-      ae -> endGame()));
-    timeline.play();
-
-    //Game over Screen.
+    GameTicker gameTicker = new GameTicker();
+    gameTicker.start();
   }
 
   private void updateBoard()
@@ -151,7 +186,19 @@ public class Gui extends Application
     }
   }
 
-  public void endGame()
+  private String errorCodeToString(int errorCode)
+  {
+    switch (errorCode)
+    {
+      case 1: return "was too small";
+      case 2: return "was already played";
+      case 3: return "is not in the board";
+      case 4: return "is not a real word";
+      default: return "failed for unknown reasons";
+    }
+  }
+
+  private void endGame()
   {
     BorderPane gameOver = new BorderPane();
     Text gameOverCenter = new Text("Your Final Score:" + boggle.getScore());
@@ -173,9 +220,38 @@ public class Gui extends Application
 
     window.getChildren().remove(screen);
     window.getChildren().add(gameOver);
-    System.out.println("GameOrge!");
-
     //System.exit(1);
+  }
+
+  class GameTicker extends AnimationTimer
+  {
+    private final double nanoToSeconds = Math.pow(10,-9);
+
+    boolean startUp = false;
+    double initialTime;//In milliseconds
+    double currTime;//In milliseconds
+    double timeRemaining;//In seconds
+    @Override
+    public void handle(long now)
+    {
+      if (startUp)
+      {
+        currTime = (now * nanoToSeconds) - initialTime;
+        //currTime = Math.floor(currTime*100)/100;
+      }
+      else
+      {
+        initialTime = now * Math.pow(10,-9);
+        startUp = true;
+      }
+      timeRemaining = (float)(gameTimeLimit - currTime);
+      timeRemaining = ((int)(timeRemaining*100))/100.0;
+      currTimeDisplay.setText("Current Time: " + timeRemaining);
+      if (timeRemaining <= 0)
+      {
+        endGame();
+      }
+    }
   }
 
   private void loadImages()
