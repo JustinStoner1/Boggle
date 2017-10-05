@@ -48,7 +48,6 @@ public class Game
       {
         if (isInBoard)
         {
-          //board.showVisted();
           if (isInDictionary)
           {
             goodWords.addWord(userInput);

@@ -4,12 +4,16 @@ import java.util.Random;
 
 public class Board
 {
+  //Constants
+  private final static String unVisitedSpot = "-";
+  private final static String visitedSpot = "@";
+
+  //Board
   private ArrayList<ArrayList<String>> board;
+  private ArrayList<ArrayList<String>> visitationRecord;
   private int widthHeight;
-  private Random randGen = new Random();
   private String diceFaces = "abcdefghijklmnopqrstuvwxyz";//"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   private int[] letterCounts = new int[diceFaces.length()];
-  private ArrayList<ArrayList<String>> vistedSpots;
 
   private int[] searchDirC = {0, 1, 1, 1, 0, -1, -1, -1};
   private int[] searchDirR = {-1, -1, 0, 1, 1, 1, 0, -1};
@@ -21,15 +25,16 @@ public class Board
     int currLetterIndex;
 
     board = new ArrayList<>(widthHeight);
-    vistedSpots = new ArrayList<>(widthHeight);
+    visitationRecord = new ArrayList<>(widthHeight);
 
+    Random randGen = new Random();//2:nan 12:dad
     for (int r = 0; r < widthHeight; r++)
     {
       ArrayList<String> row = new ArrayList<>(widthHeight);
-      vistedSpots.add(new ArrayList<>());
+      visitationRecord.add(new ArrayList<>(widthHeight));
       for (int c = 0; c < widthHeight; c++)
       {
-        vistedSpots.get(r).add("-");
+        visitationRecord.get(r).add("-");
         while (true)
         {
           currLetterIndex = randGen.nextInt(diceFaces.length());
@@ -73,7 +78,7 @@ public class Board
 
   public boolean containsWord(String word)
   {
-    resetVisited();
+    resetVisted();
     String firstLetter = "" + word.charAt(0);
     for (int r = 0; r < widthHeight; r++)
     {
@@ -81,20 +86,26 @@ public class Board
       {
         if (firstLetter.equals(board.get(r).get(c)))
         {
-          vistedSpots.get(r).set(c, "@");
-          if (lookForACertainNeighbor(r, c, word, 1))
+          if (lookForACertainNeighbor(r, c, word, 0))
           {
+            //showVisited();
             return true;
           }
         }
       }
     }
+    //showVisited();
     return false;
   }
 
   public boolean lookForACertainNeighbor(int row, int col, String word, int letterNumber)
   {
-    if (letterNumber >= word.length()) return true;
+    letterNumber++;
+    visitationRecord.get(row).set(col,visitedSpot);
+    if (letterNumber >= word.length())
+    {
+      return true;
+    }
 
     String lookFor = "" + word.charAt(letterNumber);
 
@@ -105,10 +116,9 @@ public class Board
       nR = row + searchDirR[d];
       if (nC >= 0 && nR >= 0 && nR < widthHeight && nC < widthHeight)
       {
-        if (board.get(nR).get(nC).equals(lookFor) && !vistedSpots.get(nR).get(nC).equals("@"))
+        if (board.get(nR).get(nC).equals(lookFor) && visitationRecord.get(nR).get(nC).equals(unVisitedSpot))
         {
-          vistedSpots.get(nR).set(nC, "@");
-          letterNumber++;
+          //System.out.println("["+(nC+1)+","+(nR+1)+"]:"+lookFor);
           if (lookForACertainNeighbor(nR, nC, word, letterNumber))
           {
             return true;
@@ -124,6 +134,30 @@ public class Board
     return new ArrayList<ArrayList<String>>(board);
   }
 
+  private void resetVisted()
+  {
+    for (int r = 0; r < widthHeight; r++)
+    {
+      visitationRecord.set(r,new ArrayList<>(widthHeight));
+      for (int c = 0; c < widthHeight; c++)
+      {
+        visitationRecord.get(r).add(unVisitedSpot);
+      }
+    }
+  }
+
+  private void showVisited()
+  {
+    for (int r = 0; r < widthHeight; r++)
+    {
+      for (int c = 0; c < widthHeight; c++)
+      {
+        System.out.print(visitationRecord.get(r).get(c));
+      }
+      System.out.println("\n");
+    }
+  }
+
   public String toString()
   {
     String stringRepOfDictionary = "";
@@ -133,29 +167,5 @@ public class Board
       stringRepOfDictionary += boardIterator.next() + "\n";
     }
     return stringRepOfDictionary;
-  }
-
-  public void resetVisited()
-  {
-    for (int r = 0; r < widthHeight; r++)
-    {
-      vistedSpots.set(r,new ArrayList<>());
-      for (int c = 0; c < widthHeight; c++)
-      {
-        vistedSpots.get(r).add("-");
-      }
-    }
-  }
-
-  public void showVisted()
-  {
-    for (int i = 0;i < widthHeight; i++)
-    {
-      for (int j = 0;j < widthHeight; j++)
-      {
-        System.out.print(vistedSpots.get(i).get(j));
-      }
-      System.out.println("\n");
-    }
   }
 }

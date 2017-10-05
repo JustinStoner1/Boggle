@@ -1,14 +1,20 @@
 import javafx.animation.AnimationTimer;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.event.EventHandler;
+import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.ImagePattern;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
@@ -16,7 +22,7 @@ import javafx.stage.Stage;
 
 import java.util.ArrayList;
 
-public class Gui extends Application
+public class Gui extends Application implements EventHandler<MouseEvent>
 {
   //Basic game settings
   private Game boggle;
@@ -33,6 +39,11 @@ public class Gui extends Application
   private String backGroundStyle = "-fx-background: rgb(200,200,200);";
   //Dark: "-fx-background: rgb(80,80,80);";
 
+  //Board
+  Group boardVisualStack = new Group();
+  private GridPane boardDisplay;
+  private Canvas boardDisplayCanvas;
+
   //Window size
   private final int tileSize = 80;
   private final String fontName = "monospaced";
@@ -43,7 +54,6 @@ public class Gui extends Application
   private final int windowSizeH = tileSize*widthHeight+100;
 
   private ArrayList<String> letters = new ArrayList<>();
-  GridPane boardDisplay;
 
   public static void main(String[] args)
   {
@@ -114,13 +124,20 @@ public class Gui extends Application
 
     //board
     boardDisplay = new GridPane();
+    //EXP
+    boardDisplayCanvas = new Canvas(tileSize*widthHeight, tileSize*widthHeight);
+    boardVisualStack.getChildren().add(boardDisplayCanvas);
+    //EXP
     loadImages();
     updateBoard();
+
+
 
     //Loading components
     screen.setRight(rightBar);
     screen.setLeft(leftBar);
-    screen.setCenter(boardDisplay);
+    screen.setCenter(boardVisualStack);
+    //screen.setCenter(boardDisplay);
     screen.setBottom(userInputBar);
     screen.setTop(topBoard);
 
@@ -179,11 +196,33 @@ public class Gui extends Application
       for (int c = 0; c < widthHeight; c++)
       {
         alphabetIndex = alphabet.indexOf(board.get(r).get(c).charAt(0));
+        /*
         placeHolderImageView = new ImageView(new Image(letters.get(alphabetIndex)));
         placeHolderImageView.setFitWidth(tileSize);
         placeHolderImageView.setFitHeight(tileSize);
         boardDisplay.add(placeHolderImageView,c,r);
+        */
+        Image dice = new Image(letters.get(alphabetIndex), false);
+        ImagePattern imagePattern = new ImagePattern(dice);
+        Rectangle diceRectangle = new Rectangle(c*tileSize, r*tileSize, tileSize, tileSize);
+        diceRectangle.setFill(Color.DARKOLIVEGREEN);
+        diceRectangle.setFill(imagePattern);
+        //rect1.setX(10);
+        //rect1.setY(10);
+        boardVisualStack.getChildren().addAll(diceRectangle);
       }
+    }
+  }
+
+  public void handle(MouseEvent event)
+  {
+    ImageView souceOfClick = (ImageView)event.getSource();
+    if (event.getEventType() ==  MouseEvent.MOUSE_PRESSED)
+    {
+      //userInputBar.setText();
+      System.out.println("Mouse! <00-");
+      System.out.println(event.getX());
+      System.out.println(event.getY());
     }
   }
 
