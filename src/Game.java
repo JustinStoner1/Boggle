@@ -20,7 +20,7 @@ public class Game
     goodWords = new WordList();
     badWords = new WordList();
 
-    /*
+
     int numWords = 0;
     ArrayList<String> words = dictionary.getDictionary();
     for (String word : words)
@@ -32,7 +32,6 @@ public class Game
       }
     }
     System.out.println(numWords);
-    */
   }
 
   public boolean takeTurn(String userInput)
@@ -58,7 +57,11 @@ public class Game
         }
         else lastErrorCode = 3;//Not in Board
       }
-      else lastErrorCode = 2;//Already Played
+      else
+      {
+        lastErrorCode = 2;//Already Played
+        return false;
+      }
     }
     else lastErrorCode = 1;
     badWords.addWord(userInput);

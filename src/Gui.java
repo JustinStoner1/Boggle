@@ -1,15 +1,18 @@
 import javafx.animation.AnimationTimer;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -26,7 +29,7 @@ public class Gui extends Application implements EventHandler<MouseEvent>
 {
   //Basic game settings
   private Game boggle;
-  private int widthHeight = 5;//max is 10
+  private int widthHeight = 10;//max is 10
   private int gameTimeLimit = 180;//In milliseconds 180000
   private Timeline timeline;
 
@@ -36,6 +39,9 @@ public class Gui extends Application implements EventHandler<MouseEvent>
   private Text currTimeDisplay;
   private Text scoreBoard;
   private TextField userInputBar;
+  private Text messageBox;
+  private Text badPlays;
+  private Text goodPlays;
   private String backGroundStyle = "-fx-background: rgb(200,200,200);";
   //Dark: "-fx-background: rgb(80,80,80);";
 
@@ -48,10 +54,6 @@ public class Gui extends Application implements EventHandler<MouseEvent>
   private final int tileSize = 80;
   private final String fontName = "monospaced";
   private final int fontSize = 20;
-  private final int horiMarginTotalSize = 0;//fontSize*18;
-
-  private final int windowSizeW = tileSize*widthHeight+horiMarginTotalSize;
-  private final int windowSizeH = tileSize*widthHeight+100;
 
   private ArrayList<String> letters = new ArrayList<>();
 
@@ -62,7 +64,7 @@ public class Gui extends Application implements EventHandler<MouseEvent>
 
   public void startAGame()
   {
-    boggle = new Game("assets/OpenEnglishWordList.txt",widthHeight);
+    boggle = new Game("assets/OpenEnglishWordList.txt", widthHeight);
   }
 
   @Override
@@ -78,21 +80,28 @@ public class Gui extends Application implements EventHandler<MouseEvent>
 
     primaryStage.setTitle("Boggle");
 
+    int height = tileSize * widthHeight;
+    int width = tileSize * widthHeight;
+
+    //TopBoard
     BorderPane topBoard = new BorderPane();
 
     //Message Box
-    Text messageBox = new Text(" Hit \"Enter\" to enter a word");
+    messageBox = new Text(" Hit \"Enter\" to enter a word");
     messageBox.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize));
     messageBox.setFill(Color.ORANGERED);
+    height += messageBox.getBoundsInLocal().getHeight();
 
     //Score Board
     scoreBoard = new Text("Score: ");
-    scoreBoard.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize*1.5));
+    scoreBoard.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize * 1.5));
     scoreBoard.setFill(Color.ORANGERED);
+    height += scoreBoard.getBoundsInLocal().getHeight();
 
     //Time Display
-    currTimeDisplay.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize*0.8));
+    currTimeDisplay.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize * 0.8));
     currTimeDisplay.setFill(Color.ORANGERED);
+    height += currTimeDisplay.getBoundsInLocal().getHeight();
 
     //Info Display
     topBoard.setTop(currTimeDisplay);
@@ -101,83 +110,78 @@ public class Gui extends Application implements EventHandler<MouseEvent>
 
     //Good words column
     VBox goodPlaysColumn = new VBox();
-    Text goodPlays = new Text(" Accepted Plays: \n");
+
+    Text goodPlaysText = new Text(" Valid Words: ");
+    goodPlaysText.setFill(Color.SEAGREEN);
+    goodPlaysText.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize));
+    goodPlaysColumn.getChildren().add(goodPlaysText);
+
+    goodPlays = new Text("");
     goodPlays.setFill(Color.SEAGREEN);
     goodPlays.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize));
     goodPlaysColumn.getChildren().add(goodPlays);
     ScrollPane rightBar = new ScrollPane();
-    rightBar.setContent(goodPlaysColumn);
+    rightBar.setContent(goodPlays);
     rightBar.setStyle(backGroundStyle);
+
+    goodPlaysColumn.getChildren().add(rightBar);
 
     //Bad words column
     VBox badPlaysColumn = new VBox();
-    Text badPlays = new Text(" Invalid Plays: \n");
+
+    Text badPlaysText = new Text(" Invalid Words: ");
+    badPlaysText.setFill(Color.ORANGERED);
+    badPlaysText.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize));
+    badPlaysColumn.getChildren().add(badPlaysText);
+
+    badPlays = new Text("");
     badPlays.setFill(Color.ORANGERED);
     badPlays.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize));
     badPlaysColumn.getChildren().add(badPlays);
     ScrollPane leftBar = new ScrollPane();
-    leftBar.setContent(badPlaysColumn);
+    leftBar.setContent(badPlays);
     leftBar.setStyle(backGroundStyle);
+
+    badPlaysColumn.getChildren().add(leftBar);
+
+    width += (int)(badPlaysColumn.getBoundsInLocal().getWidth() + goodPlaysColumn.getBoundsInLocal().getWidth());
+
+    //BottomBoard
+    BorderPane bottomBoard = new BorderPane();
 
     //Text Field
     userInputBar = new TextField();
+    height += userInputBar.getBoundsInLocal().getHeight();
+    EnterWord w = new EnterWord();
+    userInputBar.setOnKeyPressed(w);
+
+    //Enter Button
+    Button enter =  new Button("Enter");
+    enter.setOnAction(w);
+
+    bottomBoard.setCenter(userInputBar);
+    bottomBoard.setLeft(enter);
 
     //board
     boardDisplay = new GridPane();
     //EXP
-    boardDisplayCanvas = new Canvas(tileSize*widthHeight, tileSize*widthHeight);
+    boardDisplayCanvas = new Canvas(tileSize * widthHeight, tileSize * widthHeight);
     boardVisualStack.getChildren().add(boardDisplayCanvas);
     //EXP
     loadImages();
     updateBoard();
 
-
-
     //Loading components
-    screen.setRight(rightBar);
-    screen.setLeft(leftBar);
+    screen.setRight(goodPlaysColumn);
+    screen.setLeft(badPlaysColumn);
     screen.setCenter(boardVisualStack);
     //screen.setCenter(boardDisplay);
-    screen.setBottom(userInputBar);
+    screen.setBottom(bottomBoard);
     screen.setTop(topBoard);
-
-    //BorderPane.setMargin(boardDisplay, new Insets(12,12,12,12));
 
     window.getChildren().add(screen);
 
-    userInputBar.setOnKeyPressed(event -> {
-      if(event.getCode() == KeyCode.ENTER)
-      {
-        String userInput = userInputBar.getText();
-        if (userInput.length() > 0)
-        {
-          boolean successFullTurn = boggle.takeTurn(userInput);
-          userInputBar.setText("");
-          if (successFullTurn)
-          {
-            messageBox.setText(" \"" + userInput + "\"" + " is a valid play, worth " + (userInput.length()-2) + " Point(s)");
-            goodPlays.setText(" Accepted Plays: \n" + boggle.getGoodWords());
-            scoreBoard.setText("Score: " + boggle.getScore());
-          }
-          else
-          {
-            int errorCode = boggle.getLastErrorCode();
-            messageBox.setText(" \"" + userInput + "\" " + errorCodeToString(errorCode));
-            if (errorCode != 2)
-            {
-              badPlays.setText(" Invalid Plays: \n" + boggle.getBadWords());
-            }
-            //badPlaysColumn.getChildren().add(new Text(userInput);
-          }
-        }
-        else
-        {
-          messageBox.setText(" You must type a word");
-        }
-      }
-    });
-
-    primaryStage.setScene(new Scene(window, windowSizeW+badPlays.getBoundsInLocal().getWidth()+goodPlays.getBoundsInLocal().getWidth(), windowSizeH));
+    primaryStage.setScene(new Scene(window, width, height + 42));
     primaryStage.show();
 
     GameTicker gameTicker = new GameTicker();
@@ -196,19 +200,11 @@ public class Gui extends Application implements EventHandler<MouseEvent>
       for (int c = 0; c < widthHeight; c++)
       {
         alphabetIndex = alphabet.indexOf(board.get(r).get(c).charAt(0));
-        /*
-        placeHolderImageView = new ImageView(new Image(letters.get(alphabetIndex)));
-        placeHolderImageView.setFitWidth(tileSize);
-        placeHolderImageView.setFitHeight(tileSize);
-        boardDisplay.add(placeHolderImageView,c,r);
-        */
         Image dice = new Image(letters.get(alphabetIndex), false);
         ImagePattern imagePattern = new ImagePattern(dice);
-        Rectangle diceRectangle = new Rectangle(c*tileSize, r*tileSize, tileSize, tileSize);
+        Rectangle diceRectangle = new Rectangle(c * tileSize, r * tileSize, tileSize, tileSize);
         diceRectangle.setFill(Color.DARKOLIVEGREEN);
         diceRectangle.setFill(imagePattern);
-        //rect1.setX(10);
-        //rect1.setY(10);
         boardVisualStack.getChildren().addAll(diceRectangle);
       }
     }
@@ -216,8 +212,8 @@ public class Gui extends Application implements EventHandler<MouseEvent>
 
   public void handle(MouseEvent event)
   {
-    ImageView souceOfClick = (ImageView)event.getSource();
-    if (event.getEventType() ==  MouseEvent.MOUSE_PRESSED)
+    ImageView souceOfClick = (ImageView) event.getSource();
+    if (event.getEventType() == MouseEvent.MOUSE_PRESSED)
     {
       //userInputBar.setText();
       System.out.println("Mouse! <00-");
@@ -230,11 +226,16 @@ public class Gui extends Application implements EventHandler<MouseEvent>
   {
     switch (errorCode)
     {
-      case 1: return "was too small";
-      case 2: return "was already played";
-      case 3: return "is not in the board";
-      case 4: return "is not a real word";
-      default: return "failed for unknown reasons";
+      case 1:
+        return "was too small";
+      case 2:
+        return "was already played";
+      case 3:
+        return "is not in the board";
+      case 4:
+        return "is not a real word";
+      default:
+        return "failed for unknown reasons";
     }
   }
 
@@ -243,19 +244,19 @@ public class Gui extends Application implements EventHandler<MouseEvent>
     BorderPane gameOver = new BorderPane();
 
     Text gameOverCenter = new Text("Your Final Score:" + boggle.getScore());
-    gameOverCenter.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize*2));
+    gameOverCenter.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize * 2));
     gameOverCenter.setFill(Color.ORANGERED);
 
     Text gameOverLeft = new Text("GAME\nOVER");
-    gameOverLeft.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize*1.5));
+    gameOverLeft.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize * 1.5));
     gameOverLeft.setFill(Color.ORANGERED);
 
     Text gameOverRight = new Text("GAME\nOVER");
-    gameOverRight.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize*1.5));
+    gameOverRight.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize * 1.5));
     gameOverRight.setFill(Color.ORANGERED);
 
     Text gameOverBottom = new Text("You Played: " + boggle.getWordCount() + " Words");
-    gameOverBottom.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize*1.5));
+    gameOverBottom.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize * 1.5));
     gameOverBottom.setFill(Color.ORANGERED);
 
     gameOver.setCenter(gameOverCenter);
@@ -265,17 +266,53 @@ public class Gui extends Application implements EventHandler<MouseEvent>
 
     window.getChildren().remove(screen);
     window.getChildren().add(gameOver);
+
     //System.exit(1);
+  }
+
+  class EnterWord implements EventHandler
+  {
+    @Override
+    public void handle(Event event)
+    {
+      if (event.getEventType().equals(KeyEvent.KEY_PRESSED) && ((KeyEvent) event).getCode() != KeyCode.ENTER) return;
+      String userInput = userInputBar.getText().trim();
+      if (userInput.length() > 0)
+      {
+        boolean successFullTurn = boggle.takeTurn(userInput);
+        userInputBar.setText("");
+        if (successFullTurn)
+        {
+          messageBox.setText(" \"" + userInput + "\"" + " is a valid play, worth " + (userInput.length() - 2) + " Point(s)");
+          goodPlays.setText(boggle.getGoodWords());
+          scoreBoard.setText("Score: " + boggle.getScore());
+        }
+        else
+        {
+          int errorCode = boggle.getLastErrorCode();
+          messageBox.setText(" \"" + userInput + "\" " + errorCodeToString(errorCode));
+          if (errorCode != 2)
+          {
+            badPlays.setText(boggle.getBadWords());
+          }
+        }
+      }
+      else
+      {
+        messageBox.setText(" You must type a word");
+      }
+    }
   }
 
   class GameTicker extends AnimationTimer
   {
-    private final double nanoToSeconds = Math.pow(10,-9);
+    private final double nanoToSeconds = Math.pow(10, -9);
 
     boolean startUp = false;
     double initialTime;//In milliseconds
     double currTime;//In milliseconds
-    double timeRemaining;//In seconds
+    //double timeRemaining;//In seconds
+
     @Override
     public void handle(long now)
     {
@@ -286,12 +323,12 @@ public class Gui extends Application implements EventHandler<MouseEvent>
       }
       else
       {
-        initialTime = now * Math.pow(10,-9);
+        initialTime = now * Math.pow(10, -9);
         startUp = true;
       }
-      timeRemaining = (float)(gameTimeLimit - currTime);
-      timeRemaining = ((int)(timeRemaining*100))/100.0;
-      currTimeDisplay.setText("Current Time: " + timeRemaining);
+      double timeRemaining = gameTimeLimit - currTime;
+      timeRemaining = ((int) (timeRemaining * 100)) / 100.0;
+      currTimeDisplay.setText("\n Current Time: " + timeRemaining);
       if (timeRemaining <= 0)
       {
         endGame();
