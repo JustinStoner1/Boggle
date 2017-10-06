@@ -20,7 +20,7 @@ public class Game
     goodWords = new WordList();
     badWords = new WordList();
 
-
+    /*
     int numWords = 0;
     ArrayList<String> words = dictionary.getDictionary();
     for (String word : words)
@@ -32,6 +32,7 @@ public class Game
       }
     }
     System.out.println(numWords);
+    */
   }
 
   public boolean takeTurn(String userInput)

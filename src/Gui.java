@@ -1,22 +1,22 @@
 import javafx.animation.AnimationTimer;
-import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -25,17 +25,26 @@ import javafx.stage.Stage;
 
 import java.util.ArrayList;
 
-public class Gui extends Application implements EventHandler<MouseEvent>
+public class Gui extends Application
 {
   //Basic game settings
   private Game boggle;
-  private int widthHeight = 10;//max is 10
+  private int widthHeight;//max is 10
   private int gameTimeLimit = 180;//In milliseconds 180000
-  private Timeline timeline;
+
+  //Gui size parts
+  private final int maxBoardWidthHeight = 400;
+  private final int wordColumnWidth = 210;
+  private final int textBoxHeight = 30;
+  private final int infoBoardHeight = 100;
 
   //Gui
+  private Stage primaryStage;
   private StackPane window;
-  private BorderPane screen;
+  //StartScreenGui
+  private BorderPane startScreen;
+  //GameGui
+  private BorderPane gameScreen;
   private Text currTimeDisplay;
   private Text scoreBoard;
   private TextField userInputBar;
@@ -46,12 +55,12 @@ public class Gui extends Application implements EventHandler<MouseEvent>
   //Dark: "-fx-background: rgb(80,80,80);";
 
   //Board
-  Group boardVisualStack = new Group();
-  private GridPane boardDisplay;
+  private Group boardVisualStack = new Group();
   private Canvas boardDisplayCanvas;
+  private ArrayList<ArrayList<String>> board;
 
   //Window size
-  private final int tileSize = 80;
+  private int tileSize;
   private final String fontName = "monospaced";
   private final int fontSize = 20;
 
@@ -62,56 +71,95 @@ public class Gui extends Application implements EventHandler<MouseEvent>
     launch(args);
   }
 
-  public void startAGame()
-  {
-    boggle = new Game("assets/OpenEnglishWordList.txt", widthHeight);
-  }
-
   @Override
   public void start(Stage primaryStage)
   {
-    startAGame();
+    this.primaryStage = primaryStage;
 
+    primaryStage.setTitle("Boggle");
     window = new StackPane();
-    screen = new BorderPane();
+
+    int width = maxBoardWidthHeight+wordColumnWidth*2;
+    int height = maxBoardWidthHeight+textBoxHeight+infoBoardHeight;
+    primaryStage.setScene(new Scene(window,width,height));
+
+    startGame();
+  }
+
+  public void initializeGame(int widthHeight)
+  {
+    this.widthHeight = widthHeight;
+    tileSize = maxBoardWidthHeight/widthHeight;
+    boggle = new Game("assets/OpenEnglishWordList.txt", widthHeight);
+    displayGameGui();
+  }
+
+  private void startGame()
+  {
+    startScreen = new BorderPane();
+
+    int height = 0;
+    int width = 0;
+
+    Text welcome = new Text("Welcome to Boggle!\nwhat do you want the board size to be?\n");
+    welcome.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize*1.5));
+    welcome.setFill(Color.ORANGERED);
+
+    SetBoardSize pressHandler = new SetBoardSize();
+
+    Button fourXfour = new Button("    4 x 4    ");
+    fourXfour.setOnAction(pressHandler);
+    fourXfour.setPrefHeight(wordColumnWidth*2);
+    fourXfour.setPrefWidth(wordColumnWidth*2);
+    Button fiveXfive = new Button("    5 x 5    ");
+    fiveXfive.setOnAction(pressHandler);
+    fiveXfive.setPrefHeight(wordColumnWidth*2);
+    fiveXfive.setPrefWidth(wordColumnWidth*2);
+
+    HBox buttons = new HBox();
+    buttons.getChildren().add(fourXfour);
+    buttons.getChildren().add(fiveXfive);
+
+    startScreen.setTop(welcome);
+    startScreen.setRight(fourXfour);
+    startScreen.setLeft(fiveXfive);
+
+    window.getChildren().add(startScreen);
+
+    primaryStage.show();
+  }
+
+  private void displayGameGui()
+  {
+    gameScreen = new BorderPane();
     currTimeDisplay = new Text();
 
     window.setStyle(backGroundStyle);
 
-    primaryStage.setTitle("Boggle");
-
-    int height = tileSize * widthHeight;
-    int width = tileSize * widthHeight;
-
     //TopBoard
-    BorderPane topBoard = new BorderPane();
+    BorderPane infoBoard = new BorderPane();
 
     //Message Box
     messageBox = new Text(" Hit \"Enter\" to enter a word");
     messageBox.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize));
     messageBox.setFill(Color.ORANGERED);
-    height += messageBox.getBoundsInLocal().getHeight();
-
     //Score Board
     scoreBoard = new Text("Score: ");
     scoreBoard.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize * 1.5));
     scoreBoard.setFill(Color.ORANGERED);
-    height += scoreBoard.getBoundsInLocal().getHeight();
-
     //Time Display
     currTimeDisplay.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize * 0.8));
     currTimeDisplay.setFill(Color.ORANGERED);
-    height += currTimeDisplay.getBoundsInLocal().getHeight();
-
     //Info Display
-    topBoard.setTop(currTimeDisplay);
-    topBoard.setCenter(scoreBoard);
-    topBoard.setBottom(messageBox);
+    infoBoard.setTop(currTimeDisplay);
+    infoBoard.setCenter(scoreBoard);
+    infoBoard.setBottom(messageBox);
+    infoBoard.setPrefHeight(infoBoardHeight);
 
     //Good words column
     VBox goodPlaysColumn = new VBox();
 
-    Text goodPlaysText = new Text(" Valid Words: ");
+    Text goodPlaysText = new Text("  Valid Words:   ");
     goodPlaysText.setFill(Color.SEAGREEN);
     goodPlaysText.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize));
     goodPlaysColumn.getChildren().add(goodPlaysText);
@@ -125,11 +173,12 @@ public class Gui extends Application implements EventHandler<MouseEvent>
     rightBar.setStyle(backGroundStyle);
 
     goodPlaysColumn.getChildren().add(rightBar);
+    goodPlaysColumn.setPrefWidth(wordColumnWidth);
 
     //Bad words column
     VBox badPlaysColumn = new VBox();
 
-    Text badPlaysText = new Text(" Invalid Words: ");
+    Text badPlaysText = new Text("  Invalid Words: ");
     badPlaysText.setFill(Color.ORANGERED);
     badPlaysText.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize));
     badPlaysColumn.getChildren().add(badPlaysText);
@@ -143,45 +192,41 @@ public class Gui extends Application implements EventHandler<MouseEvent>
     leftBar.setStyle(backGroundStyle);
 
     badPlaysColumn.getChildren().add(leftBar);
-
-    width += (int)(badPlaysColumn.getBoundsInLocal().getWidth() + goodPlaysColumn.getBoundsInLocal().getWidth());
+    badPlaysColumn.setPrefWidth(wordColumnWidth);
 
     //BottomBoard
     BorderPane bottomBoard = new BorderPane();
 
     //Text Field
+    EnterWord enterWord = new EnterWord();
     userInputBar = new TextField();
-    height += userInputBar.getBoundsInLocal().getHeight();
-    EnterWord w = new EnterWord();
-    userInputBar.setOnKeyPressed(w);
+    userInputBar.setOnKeyPressed(enterWord);
+    userInputBar.setPrefHeight(textBoxHeight);
 
     //Enter Button
-    Button enter =  new Button("Enter");
-    enter.setOnAction(w);
+    Button enter =  new Button("  Enter  ");
+    enter.setOnAction(enterWord);
+    enter.setPrefHeight(textBoxHeight);
 
     bottomBoard.setCenter(userInputBar);
     bottomBoard.setLeft(enter);
 
-    //board
-    boardDisplay = new GridPane();
-    //EXP
+    //Board
     boardDisplayCanvas = new Canvas(tileSize * widthHeight, tileSize * widthHeight);
     boardVisualStack.getChildren().add(boardDisplayCanvas);
-    //EXP
     loadImages();
     updateBoard();
 
     //Loading components
-    screen.setRight(goodPlaysColumn);
-    screen.setLeft(badPlaysColumn);
-    screen.setCenter(boardVisualStack);
-    //screen.setCenter(boardDisplay);
-    screen.setBottom(bottomBoard);
-    screen.setTop(topBoard);
+    gameScreen.setRight(goodPlaysColumn);
+    gameScreen.setLeft(badPlaysColumn);
+    gameScreen.setCenter(boardVisualStack);
+    gameScreen.setBottom(bottomBoard);
+    gameScreen.setTop(infoBoard);
 
-    window.getChildren().add(screen);
+    window.getChildren().remove(startScreen);
+    window.getChildren().add(gameScreen);
 
-    primaryStage.setScene(new Scene(window, width, height + 42));
     primaryStage.show();
 
     GameTicker gameTicker = new GameTicker();
@@ -191,10 +236,11 @@ public class Gui extends Application implements EventHandler<MouseEvent>
   private void updateBoard()
   {
     String alphabet = "abcdefghijklmnopqrstuvwxyz";
-    ArrayList<ArrayList<String>> board = boggle.getBoard();
+    board = boggle.getBoard();
+
+    MouseClick clickFinder =  new MouseClick();
 
     int alphabetIndex;
-    ImageView placeHolderImageView;
     for (int r = 0; r < widthHeight; r++)
     {
       for (int c = 0; c < widthHeight; c++)
@@ -205,20 +251,10 @@ public class Gui extends Application implements EventHandler<MouseEvent>
         Rectangle diceRectangle = new Rectangle(c * tileSize, r * tileSize, tileSize, tileSize);
         diceRectangle.setFill(Color.DARKOLIVEGREEN);
         diceRectangle.setFill(imagePattern);
+
+        diceRectangle.setOnMousePressed(clickFinder);
         boardVisualStack.getChildren().addAll(diceRectangle);
       }
-    }
-  }
-
-  public void handle(MouseEvent event)
-  {
-    ImageView souceOfClick = (ImageView) event.getSource();
-    if (event.getEventType() == MouseEvent.MOUSE_PRESSED)
-    {
-      //userInputBar.setText();
-      System.out.println("Mouse! <00-");
-      System.out.println(event.getX());
-      System.out.println(event.getY());
     }
   }
 
@@ -264,10 +300,21 @@ public class Gui extends Application implements EventHandler<MouseEvent>
     gameOver.setRight(gameOverRight);
     gameOver.setBottom(gameOverBottom);
 
-    window.getChildren().remove(screen);
+    window.getChildren().remove(gameScreen);
     window.getChildren().add(gameOver);
 
     //System.exit(1);
+  }
+
+  class SetBoardSize implements EventHandler
+  {
+    @Override
+    public void handle(Event event)
+    {
+      String buttonText = ((Button)event.getSource()).getText();
+      if (buttonText.equals("    5 x 5    ")) initializeGame(5);
+      else initializeGame(4);
+    }
   }
 
   class EnterWord implements EventHandler
@@ -297,10 +344,25 @@ public class Gui extends Application implements EventHandler<MouseEvent>
           }
         }
       }
-      else
-      {
-        messageBox.setText(" You must type a word");
-      }
+      else messageBox.setText(" You must type a word");
+    }
+  }
+
+  class MouseClick implements EventHandler
+  {
+    @Override
+    public void handle(Event event)
+    {
+      Rectangle origin = (Rectangle)event.getSource();
+      int oX = (int)origin.getX()/tileSize;
+      int oY = (int)origin.getY()/tileSize;
+      String letter = board.get(oY).get(oX);
+      userInputBar.setText(userInputBar.getText()+letter);
+      //System.out.println("Click! on " + letter);
+
+      //Line arrow = new Line(oX+tileSize/2,oY+tileSize/2,90,90);
+
+      //boardVisualStack.getChildren().add(arrow);
     }
   }
 
@@ -328,7 +390,7 @@ public class Gui extends Application implements EventHandler<MouseEvent>
       }
       double timeRemaining = gameTimeLimit - currTime;
       timeRemaining = ((int) (timeRemaining * 100)) / 100.0;
-      currTimeDisplay.setText("\n Current Time: " + timeRemaining);
+      currTimeDisplay.setText("\n  Current Time: " + timeRemaining);
       if (timeRemaining <= 0)
       {
         endGame();
