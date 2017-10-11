@@ -1,7 +1,6 @@
 # Boggle
 The Boggle Project
 
-
 Starting The Game:
   Simply click run in inteliji or run the jar
 
