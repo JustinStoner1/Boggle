@@ -6,6 +6,7 @@ Starting The Game:
 
 Playing The Game:
   Plays very simply, type words into the text field that you want to play, or you can click the letter dice on the board and it will enter the letters for you.
+  The game ends when the time runs out
 
 How it works:
   Most of this is explained in the comments.
