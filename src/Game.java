@@ -1,3 +1,11 @@
+//***********************************
+//Justin Stoner
+//
+//Description:
+// Represents the game, keeps track of the data
+// Processes user input and enforces the rules
+//***********************************
+
 import java.util.ArrayList;
 
 public class Game
@@ -10,7 +18,11 @@ public class Game
   private int score;
   private int wordCount;
   private int lastErrorCode;
-
+  //***********************************
+  //input: String dictionaryFilename, int widthHeight
+  //returns: NA
+  //initializes the list
+  //***********************************
   public Game(String dictionaryFilename, int widthHeight)
   {
     this.widthHeight = widthHeight;
@@ -34,7 +46,13 @@ public class Game
     System.out.println(numWords);
     */
   }
-
+  //***********************************
+  //input: String dictionaryFilename, int widthHeight
+  //returns: boolean
+  //process the users input
+  //decides if it is legal and updates the game data
+  //updates the error codes
+  //***********************************
   public boolean takeTurn(String userInput)
   {
     if (userInput.length() > 2)
@@ -68,33 +86,65 @@ public class Game
     badWords.addWord(userInput);
     return false;//Too Small
   }
-
+  //***********************************
+  //input: void
+  //returns: ArrayList<ArrayList<String>>
+  //returns the board(a copy)
+  //***********************************
   public ArrayList<ArrayList<String>> getBoard()
   {
     return board.getBoard();
   }
-
+  //***********************************
+  //input: void
+  //returns: String
+  //returns the good word list
+  //***********************************
   public String getGoodWords()
   {
     return goodWords+"";
   }
+  //***********************************
+  //input: void
+  //returns: String
+  //returns the bad word list
+  //***********************************
   public String getBadWords()
   {
     return badWords+"";
   }
+  //***********************************
+  //input: void
+  //returns: int
+  //returns the score
+  //***********************************
   public int getScore()
   {
     return score;
   }
+  //***********************************
+  //input: void
+  //returns: int
+  //returns the number of words played
+  //***********************************
   public int getWordCount()
   {
     return wordCount;
   }
+  //***********************************
+  //input: void
+  //returns: int
+  //returns the last error code
+  //***********************************
   public int getLastErrorCode()
   {
     return lastErrorCode;
   }
-
+  //***********************************
+  //input: void
+  //returns: String
+  //returns string rep of the board
+  //***********************************
   public String toString()
   {
     return board + "";

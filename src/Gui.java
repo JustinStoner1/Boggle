@@ -1,12 +1,17 @@
+//***********************************
+//Justin Stoner
+//
+//Description:
+// starts the game and builds the gui
+//***********************************
+
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
@@ -31,9 +36,9 @@ public class Gui extends Application
   //Basic game settings
   private Game boggle;
   private int widthHeight;//max is 10
-  private int gameTimeLimit = 180;//In milliseconds 180000
+  private int gameTimeLimit = 180;//In seconds
 
-  //Gui size parts
+  //Gui size parts in pixels
   private final int maxBoardWidthHeight = 400;
   private final int wordColumnWidth = 210;
   private final int textBoxHeight = 30;
@@ -44,6 +49,8 @@ public class Gui extends Application
   private StackPane window;
   //StartScreenGui
   private BorderPane startScreen;
+  //EndScreenGui
+  BorderPane gameOver;
   //GameGui
   private BorderPane gameScreen;
   private Text currTimeDisplay;
@@ -53,6 +60,7 @@ public class Gui extends Application
   private Text badPlays;
   private Text goodPlays;
   private String backGroundStyle = "-fx-background: rgb(200,200,200);";
+  private Color lineColor = new Color(1,1,1,0.5);
   //Dark: "-fx-background: rgb(80,80,80);";
 
   //Board
@@ -71,12 +79,17 @@ public class Gui extends Application
   private Point mousePos = new Point();
   private Point lastClickPos = new Point();
   private Group lineVisualStack = new Group();
+  private Group usedLettersVisualStack = new Group();
 
   public static void main(String[] args)
   {
     launch(args);
   }
-
+  //***********************************
+  //input: Stage primaryStage
+  //returns: void
+  //Called by javafx, used to start the gui and program
+  //***********************************
   @Override
   public void start(Stage primaryStage)
   {
@@ -91,7 +104,12 @@ public class Gui extends Application
 
     startGame();
   }
-
+  //***********************************
+  //input: int widthHeight
+  //returns: void
+  //Makes a new game of boggle
+  //tells the game to display the game screen
+  //***********************************
   public void initializeGame(int widthHeight)
   {
     this.widthHeight = widthHeight;
@@ -99,13 +117,15 @@ public class Gui extends Application
     boggle = new Game("assets/OpenEnglishWordList.txt", widthHeight);
     displayGameGui();
   }
-
+  //***********************************
+  //input: void
+  //returns: void
+  //Builds the start menu
+  //sends the chosen widthHeight to initializeGame()
+  //***********************************
   private void startGame()
   {
     startScreen = new BorderPane();
-
-    int height = 0;
-    int width = 0;
 
     Text welcome = new Text("    Welcome to Boggle!\n    what do you want the board size to be?\n");
     welcome.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize*1.5));
@@ -134,7 +154,11 @@ public class Gui extends Application
 
     primaryStage.show();
   }
-
+  //***********************************
+  //input: void
+  //returns: void
+  //Builds the game gui and sets up the input sources
+  //***********************************
   private void displayGameGui()
   {
     gameScreen = new BorderPane();
@@ -238,7 +262,12 @@ public class Gui extends Application
     GameTicker gameTicker = new GameTicker();
     gameTicker.start();
   }
-
+  //***********************************
+  //input: void
+  //returns: void
+  //Grabs the tray from the instance of boggle
+  // and builds the board for the gui
+  //***********************************
   private void updateBoard()
   {
     String alphabet = "abcdefghijklmnopqrstuvwxyz";
@@ -263,8 +292,13 @@ public class Gui extends Application
       }
     }
     boardVisualStack.getChildren().add(lineVisualStack);
+    boardVisualStack.getChildren().add(usedLettersVisualStack);
   }
-
+  //***********************************
+  //input: int errorCode
+  //returns: void
+  //Translates the last error code from the game to a readable string
+  //***********************************
   private String errorCodeToString(int errorCode)
   {
     switch (errorCode)
@@ -281,10 +315,14 @@ public class Gui extends Application
         return "failed for unknown reasons";
     }
   }
-
+  //***********************************
+  //input: void
+  //returns: void
+  //Builds the end game gui and displays score info
+  //***********************************
   private void endGame()
   {
-    BorderPane gameOver = new BorderPane();
+    gameOver = new BorderPane();
 
     Text gameOverCenter = new Text("Your Final Score:" + boggle.getScore());
     gameOverCenter.setFont(Font.font(fontName, FontWeight.NORMAL, fontSize * 2));
@@ -309,10 +347,11 @@ public class Gui extends Application
 
     window.getChildren().remove(gameScreen);
     window.getChildren().add(gameOver);
-
-    //System.exit(1);
   }
-
+  //***********************************
+  //The event handler that handles the start menus buttons
+  //Calls initializeGame() with the chosen board size
+  //***********************************
   class SetBoardSize implements EventHandler
   {
     @Override
@@ -323,7 +362,12 @@ public class Gui extends Application
       else initializeGame(4);
     }
   }
-
+  //***********************************
+  //The event handler that handles the enter key and button
+  //Grabs the text from the text field and sends it to be processed in the game
+  //Updates the score board area with the current game states
+  //Tells the user if and why they input was illegal
+  //***********************************
   class EnterWord implements EventHandler
   {
     @Override
@@ -333,6 +377,7 @@ public class Gui extends Application
       String userInput = userInputBar.getText().trim();
       isDrawing = false;
       lineVisualStack.getChildren().clear();
+      usedLettersVisualStack.getChildren().clear();
       if (userInput.length() > 0)
       {
         boolean successFullTurn = boggle.takeTurn(userInput);
@@ -356,7 +401,10 @@ public class Gui extends Application
       else messageBox.setText(" You must type a word");
     }
   }
-
+  //***********************************
+  //The event handler that handles the mouse clicks
+  //draws the arrows and shows the user which blocks they have used
+  //***********************************
   class MouseClick implements EventHandler
   {
     @Override
@@ -367,29 +415,44 @@ public class Gui extends Application
       int oYPixel = (int)origin.getY()+tileSize/2;
       int oXBoard = oXPixel/tileSize;
       int oYBoard = oYPixel/tileSize;
-      String letter = board.get(oYBoard).get(oXBoard);
-      userInputBar.setText(userInputBar.getText()+letter);
 
       if (isDrawing)
       {
-        mousePos = MouseInfo.getPointerInfo().getLocation();
-        Line arrow = new Line(lastClickPos.getX(), lastClickPos.getY(), oXPixel, oYPixel);
-        //Rectangle arrow = new Rectangle(lastClickPos.getX(), lastClickPos.getY(), oXPixel, oYPixel);
-        //arrow.setFill(new Color(1,1,1,0.5));
-        //arrow.setStrokeWidth(5);
-        arrow.setFill(Color.TRANSPARENT);
-        arrow.setFill(new Color(1,1,1,0.5));
-        //arrow.setAl
-        lineVisualStack.getChildren().add(arrow);
+        int xDiff = (int)Math.abs(lastClickPos.getX()-oXPixel);
+        int YDiff = (int)Math.abs(lastClickPos.getY()-oYPixel);
+        if (xDiff < tileSize+tileSize/2 && YDiff < tileSize+tileSize/2)
+        {
+          Line arrow = new Line(lastClickPos.getX(), lastClickPos.getY(), oXPixel, oYPixel);
+          arrow.setStrokeWidth(5);
+          arrow.setStroke(lineColor);
+          lineVisualStack.getChildren().add(arrow);
+          lastClickPos.setLocation(oXPixel,oYPixel);
+          String letter = board.get(oYBoard).get(oXBoard);
+          userInputBar.setText(userInputBar.getText()+letter);
+
+          Rectangle usedIndicator = new Rectangle(origin.getX(),origin.getY(),tileSize,tileSize);
+          usedIndicator.setFill(lineColor);
+          usedLettersVisualStack.getChildren().add(usedIndicator);
+        }
       }
       else
       {
         isDrawing = true;
+        lastClickPos.setLocation(oXPixel,oYPixel);
+        String letter = board.get(oYBoard).get(oXBoard);
+        userInputBar.setText(userInputBar.getText()+letter);
+
+        Rectangle usedIndicator = new Rectangle(origin.getX(),origin.getY(),tileSize,tileSize);
+        usedIndicator.setFill(lineColor);
+        usedLettersVisualStack.getChildren().add(usedIndicator);
       }
-      lastClickPos.setLocation(oXPixel,oYPixel);
     }
   }
-
+  //***********************************
+  //The event handler that handles advances the timer
+  //updates the timer display
+  //ends the game if needed
+  //***********************************
   class GameTicker extends AnimationTimer
   {
     private final double nanoToSeconds = Math.pow(10, -9);
@@ -421,7 +484,11 @@ public class Gui extends Application
       }
     }
   }
-
+  //***********************************
+  //input: void
+  //returns: void
+  //loads the dice pictures into a usable array
+  //***********************************
   private void loadImages()
   {
     letters.add("File:assets/image_part_001.jpg");

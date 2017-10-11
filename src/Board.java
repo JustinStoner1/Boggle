@@ -1,3 +1,11 @@
+//***********************************
+//Justin Stoner
+//
+//Description:
+// Represents the board
+// checks to see if words can be legally made with the board
+//***********************************
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
@@ -18,6 +26,11 @@ public class Board
   private int[] searchDirC = {0, 1, 1, 1, 0, -1, -1, -1};
   private int[] searchDirR = {-1, -1, 0, 1, 1, 1, 0, -1};
 
+  //***********************************
+  //input: int widthHeight
+  //returns: NA
+  //crates the board
+  //***********************************
   public Board(int widthHeight)
   {
     this.widthHeight = widthHeight;
@@ -75,7 +88,11 @@ public class Board
       }
     }
   }
-
+  //***********************************
+  //input: String word
+  //returns: boolean
+  //trys to find the word in the board
+  //***********************************
   public boolean containsWord(String word)
   {
     resetVisted();
@@ -97,7 +114,11 @@ public class Board
     //showVisited();
     return false;
   }
-
+  //***********************************
+  //input: int row, int col, String word, int letterNumber
+  //returns: boolean
+  //chains together all the letters of a word if it can
+  //***********************************
   public boolean lookForACertainNeighbor(int row, int col, String word, int letterNumber)
   {
     letterNumber++;
@@ -128,12 +149,20 @@ public class Board
     }
     return false;
   }
-
+  //***********************************
+  //input: void
+  //returns: ArrayList<ArrayList<String>>
+  //returns a copy of the board
+  //***********************************
   public ArrayList<ArrayList<String>> getBoard()
   {
     return new ArrayList<ArrayList<String>>(board);
   }
-
+  //***********************************
+  //input: void
+  //returns: void
+  //resets the visitation records
+  //***********************************
   private void resetVisted()
   {
     for (int r = 0; r < widthHeight; r++)
@@ -145,19 +174,11 @@ public class Board
       }
     }
   }
-
-  private void showVisited()
-  {
-    for (int r = 0; r < widthHeight; r++)
-    {
-      for (int c = 0; c < widthHeight; c++)
-      {
-        System.out.print(visitationRecord.get(r).get(c));
-      }
-      System.out.println("\n");
-    }
-  }
-
+  //***********************************
+  //input: void
+  //returns: String
+  //returns a string rep of a board
+  //***********************************
   public String toString()
   {
     String stringRepOfDictionary = "";
