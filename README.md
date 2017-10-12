@@ -15,7 +15,4 @@ How it works:
   The board finds words in itself recursively by calling itselfs with different parts of the word
   So once it finds a letter, it will call itself with the next letter it is looking for and so on
   It looks for letters by checking its neighbors for matching letters
-  
-Known bugs:
-  Only one, sometimes, for some reason, when the program is stopped in inteliji, it will crash for reasons unkown.
-  This error has something to do with something called a "quantum renderer" and does not originate from within my code that i know of
+
