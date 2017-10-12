@@ -1,8 +1,6 @@
 # Boggle
 The Boggle Project
 
-9/2/2017:
-
 Version one of the boggle project
 
 Running the program will bring up a small window with a text box and a text field.
