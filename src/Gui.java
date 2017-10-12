@@ -21,7 +21,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
-import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -60,7 +59,6 @@ public class Gui extends Application
   private Text badPlays;
   private Text goodPlays;
   private String backGroundStyle = "-fx-background: rgb(200,200,200);";
-  private Color lineColor = new Color(1,1,1,0.5);
   //Dark: "-fx-background: rgb(80,80,80);";
 
   //Board
@@ -76,10 +74,6 @@ public class Gui extends Application
 
   //Game Play
   private boolean isDrawing = false;
-  private Point mousePos = new Point();
-  private Point lastClickPos = new Point();
-  private Group lineVisualStack = new Group();
-  private Group usedLettersVisualStack = new Group();
 
   public static void main(String[] args)
   {
@@ -273,8 +267,6 @@ public class Gui extends Application
     String alphabet = "abcdefghijklmnopqrstuvwxyz";
     board = boggle.getBoard();
 
-    MouseClick clickFinder =  new MouseClick();
-
     int alphabetIndex;
     for (int r = 0; r < widthHeight; r++)
     {
@@ -287,12 +279,9 @@ public class Gui extends Application
         diceRectangle.setFill(Color.DARKOLIVEGREEN);
         diceRectangle.setFill(imagePattern);
 
-        diceRectangle.setOnMousePressed(clickFinder);
         boardVisualStack.getChildren().addAll(diceRectangle);
       }
     }
-    boardVisualStack.getChildren().add(lineVisualStack);
-    boardVisualStack.getChildren().add(usedLettersVisualStack);
   }
   //***********************************
   //input: int errorCode
@@ -375,9 +364,6 @@ public class Gui extends Application
     {
       if (event.getEventType().equals(KeyEvent.KEY_PRESSED) && ((KeyEvent) event).getCode() != KeyCode.ENTER) return;
       String userInput = userInputBar.getText().trim();
-      isDrawing = false;
-      lineVisualStack.getChildren().clear();
-      usedLettersVisualStack.getChildren().clear();
       if (userInput.length() > 0)
       {
         boolean successFullTurn = boggle.takeTurn(userInput);
@@ -399,53 +385,6 @@ public class Gui extends Application
         }
       }
       else messageBox.setText(" You must type a word");
-    }
-  }
-  //***********************************
-  //The event handler that handles the mouse clicks
-  //draws the arrows and shows the user which blocks they have used
-  //***********************************
-  class MouseClick implements EventHandler
-  {
-    @Override
-    public void handle(Event event)
-    {
-      Rectangle origin = (Rectangle)event.getSource();
-      int oXPixel = (int)origin.getX()+tileSize/2;
-      int oYPixel = (int)origin.getY()+tileSize/2;
-      int oXBoard = oXPixel/tileSize;
-      int oYBoard = oYPixel/tileSize;
-
-      if (isDrawing)
-      {
-        int xDiff = (int)Math.abs(lastClickPos.getX()-oXPixel);
-        int YDiff = (int)Math.abs(lastClickPos.getY()-oYPixel);
-        if (xDiff < tileSize+tileSize/2 && YDiff < tileSize+tileSize/2)
-        {
-          Line arrow = new Line(lastClickPos.getX(), lastClickPos.getY(), oXPixel, oYPixel);
-          arrow.setStrokeWidth(5);
-          arrow.setStroke(lineColor);
-          lineVisualStack.getChildren().add(arrow);
-          lastClickPos.setLocation(oXPixel,oYPixel);
-          String letter = board.get(oYBoard).get(oXBoard);
-          userInputBar.setText(userInputBar.getText()+letter);
-
-          Rectangle usedIndicator = new Rectangle(origin.getX(),origin.getY(),tileSize,tileSize);
-          usedIndicator.setFill(lineColor);
-          usedLettersVisualStack.getChildren().add(usedIndicator);
-        }
-      }
-      else
-      {
-        isDrawing = true;
-        lastClickPos.setLocation(oXPixel,oYPixel);
-        String letter = board.get(oYBoard).get(oXBoard);
-        userInputBar.setText(userInputBar.getText()+letter);
-
-        Rectangle usedIndicator = new Rectangle(origin.getX(),origin.getY(),tileSize,tileSize);
-        usedIndicator.setFill(lineColor);
-        usedLettersVisualStack.getChildren().add(usedIndicator);
-      }
     }
   }
   //***********************************
