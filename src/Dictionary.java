@@ -1,15 +1,29 @@
+//***********************************
+//Justin Stoner
+//
+//Description:
+// Grabs words from the provided file
+// And puts them into an arraylist
+// Also checks if a word exists inside itself
+//***********************************
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 public class Dictionary
 {
-  String fileName;
-  ArrayList<String> dictionary = new ArrayList<String>();
+  //final private String fileName;
+  private ArrayList<String> dictionary = new ArrayList<>(178695);
 
+  //***********************************
+  //input: String fileName
+  //returns: NA
+  //takes words from a text file and adds them to the dictionary
+  //***********************************
   public Dictionary(String fileName)
   {
-    this.fileName = fileName;
+    //this.fileName = fileName;
 
     // This will reference one line at a time
     String word;
@@ -31,7 +45,7 @@ public class Dictionary
         }
         else break;
       }
-      // Always close files.
+      //System.out.println(dictionary.size());
       bufferedReader.close();
     }
     catch (FileNotFoundException ex)
@@ -41,16 +55,31 @@ public class Dictionary
     catch (IOException ex)
     {
       System.out.println("An error was encountered while reading in the dictionary");
-      // Or we could just do this:
-      // ex.printStackTrace();
     }
   }
-
+  //***********************************
+  //input: String fileName
+  //returns: boolean
+  //takes words from a text file and adds them to the dictionary
+  //***********************************
   public boolean isInDictionary(String word)
   {
     return dictionary.contains(word);
   }
-
+  //***********************************
+  //input: void
+  //returns: ArrayList<String>
+  //returns a copy of the dictionary
+  //***********************************
+  public ArrayList<String> getDictionary()
+  {
+    return new ArrayList<String>(dictionary);
+  }
+  //***********************************
+  //input: void
+  //returns: String
+  //returns the dictionary
+  //***********************************
   public String toString()
   {
     String stringRepOfDictionary = "";
